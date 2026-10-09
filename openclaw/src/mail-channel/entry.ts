@@ -195,8 +195,14 @@ const gateway: NonNullable<ChannelPlugin<ResolvedAppleMailAccount>["gateway"]> =
   startAccount: async (ctx) => {
     const config = ctx.account.config;
 
-    // The gateway checks isConfigured before starting this account.
+    // The gateway checks isConfigured before starting this account, so this only fires
+    // on a host path that skips that check. Kept so a reply can never leave without a sender.
     const replyFrom = config.selfAddresses?.[0];
+    if (!replyFrom) {
+      throw new Error(
+        "apple-mail: channels.apple-mail.selfAddresses must list at least one address.",
+      );
+    }
 
     const deps = createMailCliDeps({
       accountId: config.accountId,
